@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Tickets{% endblock %}
+{% block content %}
+<h2>Raise a Ticket</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="issue" class="form-label">Issue</label>
+        <textarea id="issue" name="issue" class="form-control" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}
