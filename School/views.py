@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
-from .models import Profile, Student, Class, Section, Result, Attendance, Ticket
+from .models import Profile, Student, Class, Section, Result, Attendance, Ticket, Teacher
 from .forms import UserForm, ProfileForm, StudentForm, TicketForm, TeacherForm
 
 def home(request):
@@ -21,7 +21,7 @@ def register(request):
         if user_form.is_valid() and profile_form.is_valid():
             # Save the user and profile
             user = user_form.save(commit=False)
-            user.set_password(user_form.cleaned_data["password"])
+            user.set_password(user_form.cleaned_data["password1"])
             user.save()
 
             # Create and save the profile with the user
@@ -29,19 +29,22 @@ def register(request):
             profile.user = user
             profile.save()
 
-            # Based on role, save role-specific data
+            # Set the user's full name and handle role-specific data
+            full_name = f"{user.first_name} {user.last_name}"
             if profile.role == "Teacher" and teacher_form.is_valid():
                 teacher = teacher_form.save(commit=False)
                 teacher.profile = profile
+                teacher.year_of_joining = request.POST.get("year_of_joining")
                 teacher.save()
 
-            if profile.role == "Student" and student_form.is_valid():
+            elif profile.role == "Student" and student_form.is_valid():
                 student = student_form.save(commit=False)
                 student.profile = profile
+                student.year_of_admission = request.POST.get("year_of_admission")
+                student.full_name = full_name
                 student.save()
 
-            # After creating user, redirect to login page
-            return redirect("login")
+            return redirect("login")  # Redirect to login page
     else:
         user_form = UserForm()
         profile_form = ProfileForm()
@@ -59,6 +62,7 @@ def register(request):
         },
     )
 
+
 def login_view(request):
     """User login view."""
     if request.method == "POST":
@@ -66,6 +70,11 @@ def login_view(request):
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            # Check if the user has a profile
+            if not hasattr(user, 'profile'):
+                # Create a profile for the admin user automatically
+                Profile.objects.create(user=user, role='Admin')
+            
             login(request, user)
             return redirect("dashboard")
         else:
@@ -81,15 +90,55 @@ def logout_view(request):
 @login_required
 def dashboard(request):
     """Dashboard view for different user roles."""
-    profile = request.user.profile
+    try:
+        profile = request.user.profile
+    except Profile.DoesNotExist:
+        # Automatically create a profile for users without one
+        profile = Profile.objects.create(user=request.user, role="Admin")
+        return render(request, "html/dashboard.html", {"role": "Admin", "full_name": request.user.get_full_name()})
+
     if profile.role == "Student":
-        return render(request, "html/dashboard.html", {"role": "Student"})
+        try:
+            student = Student.objects.get(profile=profile)
+            return render(
+                request, 
+                "html/dashboard.html", 
+                {"role": "Student", "student": student, "full_name": student.full_name}
+            )
+        except Student.DoesNotExist:
+            # Redirect or show a message if no student instance is linked
+            return render(
+                request,
+                "html/error.html",
+                {"message": "Student profile not found. Contact Admin."},
+            )
+
     elif profile.role == "Teacher":
-        return render(request, "html/dashboard.html", {"role": "Teacher"})
+        try:
+            teacher = Teacher.objects.get(profile=profile)
+            full_name = teacher.full_name
+            return render(
+                request, 
+                "html/dashboard.html", 
+                {"role": "Teacher", "teacher": teacher, "full_name": full_name}
+            )
+        except Teacher.DoesNotExist:
+            # Redirect or show a message if no teacher instance is linked
+            return render(
+                request,
+                "html/error.html",
+                {"message": "Teacher profile not found. Contact Admin."},
+            )
+
     elif profile.role == "Admin":
-        return render(request, "html/dashboard.html", {"role": "Admin"})
+        full_name = request.user.get_full_name()
+        if full_name:
+            return render(request, "html/dashboard.html", {"role": "Admin", "full_name": full_name})
+        else:
+            return render(request, "html/dashboard.html", {"role": "Admin", "full_name": "Admin"})
+
     else:
-        return HttpResponseForbidden()
+        return HttpResponseForbidden("You are not authorized to access this page.")
 
 @login_required
 def student_list(request):
@@ -99,6 +148,15 @@ def student_list(request):
 
     students = Student.objects.all()
     return render(request, "html/student_list.html", {"students": students})
+
+@login_required
+def teacher_list(request):
+    """View to manage students."""
+    if request.user.profile.role not in ["Admin"]:
+        return HttpResponseForbidden()
+
+    teacher = Teacher.objects.all()
+    return render(request, "html/teacher_list.html", {"students": teacher})
 
 @login_required
 def attendance(request):
@@ -146,7 +204,7 @@ def create_student(request):
     if request.method == 'POST':
         user_form = UserForm(request.POST)
         profile_form = ProfileForm(request.POST)
-        student_form = StudentForm(request.POST)
+        student_form = StudentForm(request.POST, request.FILES)  # Handle file uploads
 
         if user_form.is_valid() and profile_form.is_valid() and student_form.is_valid():
             # Create user instance
@@ -180,3 +238,37 @@ def create_student(request):
         'profile_form': profile_form,
         'student_form': student_form
     })
+
+@login_required
+def manage_users(request):
+    """View for managing users (Admin only)."""
+    if request.user.profile.role != "Admin":
+        return HttpResponseForbidden("You are not authorized to view this page.")
+
+    users = User.objects.all()
+    return render(request, "html/manage_users.html", {"users": users})
+
+
+@login_required
+def subjects(request):
+    """View subjects for students or teachers."""
+    if request.user.profile.role == "Student":
+        student = Student.objects.get(profile=request.user.profile)
+        subjects = Subject.objects.filter(class_name=student.class_name)
+    elif request.user.profile.role == "Teacher":
+        teacher = Teacher.objects.get(profile=request.user.profile)
+        subjects = Subject.objects.filter(teacher=request.user.profile)
+    elif request.user.profile.role == "Admin":
+        subjects = Subject.objects.all()
+    else:
+        return HttpResponseForbidden("Unauthorized Access")
+    return render(request, "html/subjects.html", {"subjects": subjects})
+
+@login_required
+def notices(request):
+    """Display notices."""
+    notices = [
+        {"title": "Annual Day", "description": "Details about the event."},
+        {"title": "Exam Schedule", "description": "Midterm exam dates."},
+    ]
+    return render(request, "html/notices.html", {"notices": notices})

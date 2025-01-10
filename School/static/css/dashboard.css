@@ -1,0 +1,29 @@
+.dashboard-container {
+    display: flex;
+}
+
+.side-menu {
+    width: 250px;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-right: 1px solid #ddd;
+}
+
+.side-menu ul {
+    list-style: none;
+    padding: 0;
+}
+
+.side-menu ul li {
+    margin: 10px 0;
+}
+
+.side-menu ul li a {
+    text-decoration: none;
+    color: #ff0000;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+}

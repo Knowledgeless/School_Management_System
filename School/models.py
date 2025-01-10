@@ -38,6 +38,7 @@ class Student(models.Model):
     roll_no = models.IntegerField()
     full_name = models.CharField(max_length=255, default="give_me_name")
     year_of_admission = models.IntegerField(null=True, blank=True)  # Add this field
+    photo = models.ImageField(upload_to='student_photos/', null=True, blank=True)  # Add this field
 
     def __str__(self):
         return f"{self.profile.user.username} - {self.class_name} {self.section}"

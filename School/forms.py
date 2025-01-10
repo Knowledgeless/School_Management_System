@@ -24,10 +24,9 @@ class TeacherForm(forms.ModelForm):
         fields = ['subject', 'department']
 
 class StudentForm(forms.ModelForm):
-    """Form for student-specific details."""
     class Meta:
         model = Student
-        fields = ['class_name', 'section', 'roll_no']
+        fields = ['class_name', 'section', 'roll_no', 'full_name', 'year_of_admission', 'photo']  # Add 'photo' field here
 
 class TicketForm(forms.ModelForm):
     """Form for raising tickets."""
