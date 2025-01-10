@@ -1,0 +1,7 @@
+.result{
+    padding: 30px 0;
+    color: var(--white);
+}
+.table{
+    border-radius: 10px !important;
+}

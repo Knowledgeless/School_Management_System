@@ -7,6 +7,12 @@
     --background:  rgb(0, 20, 43);
     --blue: rgb(0, 32, 69);
     --hover: rgb(0, 217, 255);
+    --big: 32px;
+    --mid: 23px;
+    --ptext: 16px;
+    --text: rgb(33, 33, 33);
+    --white: white;
+    --border: rgb(8, 74, 109);
 }
 
 *{
@@ -16,9 +22,13 @@
     font-family: var(--poppins);
     font-weight: var(--regular);
 }
-
+body{
+    background-color: var(--background);
+    color: var(--white);
+}
 
 .navbar{
+    border-bottom: 1px solid var(--border);
     background-color: var(--background)
 }
 .navbar a{
@@ -34,11 +44,12 @@
     padding: 0 5px 0 0;
 }
 .menu{
-    padding: 20px 0;
+    padding: 10px 0;
 }
 
 .sidebar{
     padding: 0 20px;
+    border-right: 1px solid rgb(8, 74, 109);
     background-color: var(--blue);
     color: whitesmoke;
 }
@@ -51,16 +62,27 @@
 .sidebar a:hover{
     color: var(--hover);
 }
-
-.user_photo{
-    border: none;
-    border-radius: 100%;
-    height: 120px;
-    width: 120px;
-}
 .sidebar ul li a i{
     margin: right;
 }
 .fas{
     margin-right: 10px;
+}
+.user_photo{
+    border: none;
+    border-radius: 100%;
+    height: 100px;
+    width: 100px;
+}
+a{
+    text-decoration: none;
+}
+.st_name,.st_username{
+    font-size: 14px;
+    margin: 0 auto;
+}
+
+.content{
+    padding: 0;
+    background-color: var(--background);
 }

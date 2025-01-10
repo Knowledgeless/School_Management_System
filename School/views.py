@@ -3,8 +3,9 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
-from .models import Profile, Student, Class, Section, Result, Attendance, Ticket, Teacher
+from .models import Profile, Student, Class, Section, Result, Attendance, Ticket, Teacher, TotalGrade, Subject
 from .forms import UserForm, ProfileForm, StudentForm, TicketForm, TeacherForm
+from django.db.models import Sum, Avg
 
 def home(request):
     """Landing page."""
@@ -100,13 +101,19 @@ def dashboard(request):
     if profile.role == "Student":
         try:
             student = Student.objects.get(profile=profile)
+            semester_data = semester_cards(request)
             return render(
                 request, 
                 "html/dashboard.html", 
-                {"role": "Student", "student": student, "full_name": student.full_name}
+                {
+                    "role": "Student",
+                    "student": student,
+                    "full_name": student.full_name,
+                    "semester_data": semester_data['semester_data'],
+                    "final_grade": semester_data['final_grade'],
+                }
             )
         except Student.DoesNotExist:
-            # Redirect or show a message if no student instance is linked
             return render(
                 request,
                 "html/error.html",
@@ -116,14 +123,12 @@ def dashboard(request):
     elif profile.role == "Teacher":
         try:
             teacher = Teacher.objects.get(profile=profile)
-            full_name = teacher.full_name
             return render(
                 request, 
                 "html/dashboard.html", 
-                {"role": "Teacher", "teacher": teacher, "full_name": full_name}
+                {"role": "Teacher", "teacher": teacher, "full_name": teacher.full_name}
             )
         except Teacher.DoesNotExist:
-            # Redirect or show a message if no teacher instance is linked
             return render(
                 request,
                 "html/error.html",
@@ -131,14 +136,10 @@ def dashboard(request):
             )
 
     elif profile.role == "Admin":
-        full_name = request.user.get_full_name()
-        if full_name:
-            return render(request, "html/dashboard.html", {"role": "Admin", "full_name": full_name})
-        else:
-            return render(request, "html/dashboard.html", {"role": "Admin", "full_name": "Admin"})
+        full_name = request.user.get_full_name() or "Admin"
+        return render(request, "html/dashboard.html", {"role": "Admin", "full_name": full_name})
 
-    else:
-        return HttpResponseForbidden("You are not authorized to access this page.")
+    return HttpResponseForbidden("You are not authorized to access this page.")
 
 @login_required
 def student_list(request):
@@ -156,7 +157,7 @@ def teacher_list(request):
         return HttpResponseForbidden()
 
     teacher = Teacher.objects.all()
-    return render(request, "html/teacher_list.html", {"students": teacher})
+    return render(request, "html/teacher_list.html", {"teachers": teacher})
 
 @login_required
 def attendance(request):
@@ -175,13 +176,33 @@ def attendance(request):
 def results(request):
     """View results for students."""
     if request.user.profile.role == "Student":
-        results = Result.objects.filter(student=request.user.profile.student)
-        return render(request, "html/results.html", {"results": results})
+        student = request.user.profile.student
+        
+        # Get the selected semester from the GET parameters (default to 'Sem1')
+        selected_semester = request.GET.get('semester', 'Sem1')
+        
+        # Filter the results based on the selected semester
+        results = Result.objects.filter(student=student, semester=selected_semester)
+        
+        # Calculate or retrieve the total grade
+        total_grade, created = TotalGrade.objects.get_or_create(student=student)
+        total_grade.save()  # Ensure the grade is up-to-date
+        
+        return render(
+            request,
+            "html/results.html",
+            {
+                "results": results,
+                "total_grade": total_grade.grade,
+                "selected_semester": selected_semester,  # Pass selected semester
+            },
+        )
     elif request.user.profile.role in ["Teacher", "Admin"]:
         # Allow teachers/admins to view or manage results
         return render(request, "html/results.html", {"manage_results": True})
     else:
         return HttpResponseForbidden()
+
 
 @login_required
 def tickets(request):
@@ -190,13 +211,16 @@ def tickets(request):
         form = TicketForm(request.POST)
         if form.is_valid():
             ticket = form.save(commit=False)
-            ticket.user = request.user
+            ticket.student = request.user.profile.student  # Set the student field
             ticket.save()
             return redirect("tickets")
+        else:
+            print(form.errors)
     else:
         form = TicketForm()
-        tickets = Ticket.objects.filter(user=request.user)
+        tickets = Ticket.objects.all()
         return render(request, "html/tickets.html", {"form": form, "tickets": tickets})
+    return render(request, "html/tickets.html")
 
 
 
@@ -272,3 +296,56 @@ def notices(request):
         {"title": "Exam Schedule", "description": "Midterm exam dates."},
     ]
     return render(request, "html/notices.html", {"notices": notices})
+
+
+
+
+@login_required
+def semester_cards(request):
+    # Fetch the logged-in user
+    user = request.user
+    student = user.profile.student  # Assuming the user has a student profile
+    
+    # Define semesters
+    semesters = ['Sem1', 'Sem2', 'Sem3']
+    
+    # Fetch semester data for the logged-in user
+    semester_data = [
+        {
+            'semester': semester,
+            'total_marks': Result.objects.filter(semester=semester, student=student).aggregate(total=Sum('marks'))['total'] or 0,
+            'average_marks': Result.objects.filter(semester=semester, student=student).aggregate(avg=Avg('marks'))['avg'] or 0
+        }
+        for semester in semesters
+    ]
+    
+    # Calculate final grade based on average of all semesters
+    avg_marks_all_semesters = (
+        Result.objects.filter(semester__in=semesters, student=student).aggregate(avg=Avg('marks'))['avg'] or 0
+    )
+
+    def calculate_final_grade(avg_marks):
+        if avg_marks <= 32:
+            return 'F'
+        elif avg_marks >= 80:
+            return 'A+'
+        elif 70 <= avg_marks < 80:
+            return 'A'
+        elif 60 <= avg_marks < 70:
+            return 'A-'
+        elif 50 <= avg_marks < 60:
+            return 'B'
+        elif 40 <= avg_marks < 50:
+            return 'C'
+        else:
+            return 'D'
+
+    final_grade = calculate_final_grade(avg_marks_all_semesters)
+
+    return {
+        'semester_data': semester_data,
+        'final_grade': {
+            'average_marks': avg_marks_all_semesters,
+            'grade': final_grade
+        },
+    }

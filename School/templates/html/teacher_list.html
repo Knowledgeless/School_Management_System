@@ -5,13 +5,21 @@
 <table class="table table-striped table-hover">
     <thead>
         <tr>
-            
+            <th>No</th>
+            <th>Name</th>
+            <th>Subject</th>
+            <th>Year_of_joining</th>
+            <th>Department</th>
         </tr>
     </thead>
     <tbody>
-        {% for student in teachers %}
+        {% for teacher in teachers %}
         <tr>
-            
+            <td> {{ forloop.counter }} </td>
+            <td>{{teacher.full_name}}</td>
+            <td>{{teacher.subject}}</td>
+            <td>{{teacher.year_of_joining}}</td>
+            <td>{{teacher.department}}</td>
         </tr>
         {% endfor %}
     </tbody>

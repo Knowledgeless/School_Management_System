@@ -1,29 +1,24 @@
-.dashboard-container {
-    display: flex;
+
+.dashboard{
+    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.082);
+    color: var(--white);
 }
 
-.side-menu {
-    width: 250px;
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-right: 1px solid #ddd;
+.welcome h1{
+    font-size: var(--big);
+    font-weight: bold;
+}
+.card{
+    background-color: transparent;
+}
+.line{
+    border: 1px solid var(--border);
+}
+.total{
+    font-size: var(--mid);
 }
 
-.side-menu ul {
-    list-style: none;
-    padding: 0;
-}
-
-.side-menu ul li {
-    margin: 10px 0;
-}
-
-.side-menu ul li a {
-    text-decoration: none;
-    color: #ff0000;
-}
-
-.main-content {
-    flex: 1;
-    padding: 20px;
+.avg{
+    font-size: var(--ptext);
 }

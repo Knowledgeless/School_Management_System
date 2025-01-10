@@ -70,9 +70,18 @@ class SubjectAdmin(admin.ModelAdmin):
 # Register Result
 @admin.register(Result)
 class ResultAdmin(admin.ModelAdmin):
-    list_display = ('id', 'student', 'subject', 'marks', 'total_marks', 'grade')
-    list_filter = ('subject', 'grade')
-    search_fields = ('student__profile__user__username', 'subject__name')
+    list_display = ('student', 'subject', 'semester', 'marks', 'total_marks', 'grade')
+    list_filter = ('semester', 'grade')  # Filters for semester and grade
+    search_fields = ('student__profile__user__username', 'subject__name')  # Search by student username or subject name
+    ordering = ('semester', 'student')  # Default ordering in the admin panel
+    readonly_fields = ('grade',)  # Grade is calculated automatically and should not be editable
+    
+    def save_model(self, request, obj, form, change):
+        """
+        Ensure the grade is recalculated whenever the result is saved.
+        """
+        obj.grade = obj.calculate_grade()  # Recalculate the grade
+        super().save_model(request, obj, form, change)
 
 # Register Ticket
 @admin.register(Ticket)

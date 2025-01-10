@@ -1,13 +1,48 @@
 {% extends 'base.html' %}
+
 {% block title %}Tickets{% endblock %}
+
 {% block content %}
-<h2>Raise a Ticket</h2>
-<form method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label for="issue" class="form-label">Issue</label>
-        <textarea id="issue" name="issue" class="form-control" required></textarea>
+    <div class="ticket container">
+        {% if user.profile.role == "Admin" %}
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Issue Type</th>
+                        <th>Description</th>
+                        <th>Submission Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ ticket.student.full_name }}</td>
+                        <td>{{ ticket.issue_type }}</td>
+                        <td>{{ ticket.description }}</td>
+                        <td>{{ ticket.date_raised }}</td>
+                        <td>{{ ticket.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <h2>Raise a Ticket</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="issue_type" class="form-label">Issue Type</label>
+                    <input type="text" id="issue_type" name="issue_type" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" name="description" class="form-control" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        {% endif %}
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
 {% endblock %}

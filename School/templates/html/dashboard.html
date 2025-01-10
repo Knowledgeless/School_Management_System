@@ -4,16 +4,71 @@
 
 {% block links %}
     <link rel="stylesheet" href="{% static "css/dashboard.css" %}">
+    <link rel="stylesheet" href="{% static "responsive/r_dashboard.css" %}">
 {% endblock links %}
 
 {% block content %}
 
-    <div class="new">
-        <div class="p-3">
-            <h1>Welcome to the Dashboard</h1>
-            <p>This is the main content area.</p>
-            {% block dashboard_content %}{% endblock %}
+    <div class="dashboard">
+        <div class="welcome container">
+            <h1>Welcome back !</h1>
+            <p>Hello, our wonderful friend! May your day be filled with laughter, love, and all things amazing!</p>
         </div>
     </div>
+    {% if user.profile.role == "Student" %}
+        <div class="container mt-4">
+            <div class="row">
+                <!-- Semester Cards -->
+                {% for semester in semester_data %}
+                <div class="col-md-3 mb-4 text-center">
+                    <div class="card line">
+                        <div class="card-header line text-white">
+                            {% if semester.semester == 'Sem1' %}
+                                Semester 1
+                            {% elif semester.semester == 'Sem2' %}
+                                Semester 2
+                            {% elif semester.semester == 'Sem3' %}
+                                Semester 3
+                            {% endif %}
+                        </div>
+                        <div class="card-body text-white">
+                            <p class="card-text total">
+                                {{ semester.total_marks }}
+                            </p>
+                            <p class="card-text avg">
+                                Average {{ semester.average_marks|floatformat:2 }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+        
+                <!-- Final Grade Card -->
+                
+                <div class="col-md-3 mb-4 text-center">
+                    <div class="card line">
+                        <div class="card-header bg-primary text-white">
+                            Final Grade
+                        </div>
+                        <div class="card-body text-white">
+                            <p class="card-text total">
+                                {{ final_grade.grade }} 
+                            </p>
+                            <p class="card-text avg">
+                                Agerage: {{ final_grade.average_marks|floatformat:2 }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    {% endif %}
+    
+    
+
+
+
+
 
 {% endblock %}
