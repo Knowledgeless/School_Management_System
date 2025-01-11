@@ -12,6 +12,9 @@
 .card{
     background-color: transparent;
 }
+.card_all{
+    margin-top: 50px !important;
+}
 .line{
     border: 1px solid var(--border);
 }

@@ -17,7 +17,7 @@
     </div>
     {% if user.profile.role == "Student" %}
         <div class="container mt-4">
-            <div class="row">
+            <div class="row card_all">
                 <!-- Semester Cards -->
                 {% for semester in semester_data %}
                 <div class="col-md-3 mb-4 text-center">
@@ -36,7 +36,7 @@
                                 {{ semester.total_marks }}
                             </p>
                             <p class="card-text avg">
-                                Average {{ semester.average_marks|floatformat:2 }}
+                                Average: {{ semester.average_marks|floatformat:2 }}
                             </p>
                         </div>
                     </div>

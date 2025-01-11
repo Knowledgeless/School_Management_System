@@ -2,6 +2,12 @@
     padding: 30px 0;
     color: var(--white);
 }
-.table{
-    border-radius: 10px !important;
+
+table .table_space{
+    padding: 10px 25px;
+}
+
+.semester .active{
+    background-color: var(--white);
+    color: var(--background);
 }

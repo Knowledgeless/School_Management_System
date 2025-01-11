@@ -153,9 +153,6 @@ def student_list(request):
 @login_required
 def teacher_list(request):
     """View to manage students."""
-    if request.user.profile.role not in ["Admin"]:
-        return HttpResponseForbidden()
-
     teacher = Teacher.objects.all()
     return render(request, "html/teacher_list.html", {"teachers": teacher})
 
@@ -177,17 +174,27 @@ def results(request):
     """View results for students."""
     if request.user.profile.role == "Student":
         student = request.user.profile.student
-        
+
         # Get the selected semester from the GET parameters (default to 'Sem1')
         selected_semester = request.GET.get('semester', 'Sem1')
-        
+
         # Filter the results based on the selected semester
         results = Result.objects.filter(student=student, semester=selected_semester)
-        
+
         # Calculate or retrieve the total grade
         total_grade, created = TotalGrade.objects.get_or_create(student=student)
+
+        # Avoid ZeroDivisionError in grade calculation
+        total_marks = sum(result.marks for result in results)
+        total_subjects = results.count()
+
+        if total_subjects > 0:
+            total_grade.grade = total_marks / total_subjects
+        else:
+            total_grade.grade = 0  # Default grade for no results
+
         total_grade.save()  # Ensure the grade is up-to-date
-        
+
         return render(
             request,
             "html/results.html",

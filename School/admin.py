@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Class, Section, Profile, Student, Attendance, Subject, Result, Ticket, Teacher
+from django.db import transaction
+
 
 # Inline Profile Admin for User
 class ProfileInline(admin.StackedInline):
@@ -9,9 +11,10 @@ class ProfileInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = 'Profile'
 
+
 # Custom User Admin to integrate Profile
 class UserAdmin(BaseUserAdmin):
-    inlines = (ProfileInline,)
+    inlines = [ProfileInline]
 
     # Display role in the user list
     def role(self, obj):
@@ -22,11 +25,49 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'profile__role')
 
-    # Allow filtering by role
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         queryset = queryset.select_related('profile')
         return queryset
+
+    def save_model(self, request, obj, form, change):
+        """
+        Ensure a Profile is created or retrieved, and roles are handled correctly.
+        """
+        # First, save the user
+        super().save_model(request, obj, form, change)
+
+        # Use transaction.atomic to ensure both user and profile are saved correctly
+        with transaction.atomic():
+            # Ensure Profile exists or is retrieved
+            profile, created = Profile.objects.get_or_create(user=obj)
+
+            # Only create Teacher or Student if Profile is created
+            if created:
+                if profile.role == "Teacher":
+                    Teacher.objects.get_or_create(profile=profile)
+                elif profile.role == "Student":
+                    Student.objects.get_or_create(profile=profile)
+
+    def save_related(self, request, form, formsets, change):
+        """
+        Avoid creating profiles again, as it's handled in `save_model`.
+        """
+        super().save_related(request, form, formsets, change)
+
+        # No need to create the Profile here since it is already created in save_model
+        profile = form.instance.profile
+
+        # Ensure the profile is not duplicated
+        if profile.user is not None:
+            # Handle Teacher/Student relation if not created before
+            if profile.role == "Teacher":
+                Teacher.objects.get_or_create(profile=profile)
+            elif profile.role == "Student":
+                Student.objects.get_or_create(profile=profile)
+        else:
+            # If profile doesn't have a user associated, you might want to raise an error or handle it
+            raise ValueError("Profile must be associated with a User before creating Teacher/Student.")
 
 # Register Class
 @admin.register(Class)
@@ -75,7 +116,7 @@ class ResultAdmin(admin.ModelAdmin):
     search_fields = ('student__profile__user__username', 'subject__name')  # Search by student username or subject name
     ordering = ('semester', 'student')  # Default ordering in the admin panel
     readonly_fields = ('grade',)  # Grade is calculated automatically and should not be editable
-    
+
     def save_model(self, request, obj, form, change):
         """
         Ensure the grade is recalculated whenever the result is saved.
@@ -94,19 +135,10 @@ class TicketAdmin(admin.ModelAdmin):
 # Teacher Admin
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    # Fields to display in the list view
-    list_display = ('profile', 'subject', 'full_name', 'year_of_joining', 'department')  # Added 'department'
-    
-    # Fields to filter by in the admin panel
-    list_filter = ('subject', 'department')  # Added 'department' to filter options
-    
-    # Fields to search by in the admin panel
-    search_fields = ('profile__user__username', 'subject', 'full_name', 'department')  # Added 'department' to search
-    
-    # Optionally, make 'subject' and 'department' editable directly in the list view
-    list_editable = ('subject', 'department')
-
-    # Ordering by year_of_joining
+    list_display = ['profile', 'subject', 'full_name', 'year_of_joining', 'department', 'phone_number', 'email']
+    list_filter = ('subject', 'department', 'year_of_joining')
+    search_fields = ('profile__user__username', 'subject', 'full_name', 'department', 'phone_number', 'email')
+    list_editable = ('subject', 'department', 'phone_number', 'email')
     ordering = ('year_of_joining',)
 
 

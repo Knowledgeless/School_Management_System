@@ -67,8 +67,8 @@
                                 <a class="st_name">{{ user.profile.student.full_name }}</a><br>
                                 <a class="st_username">{{ user.username }}</a>
                                 <li><a class="text-decoration-none" href="{% url 'results' %}"><i class="fas fa-chart-line"></i> Results</a></li>
+                                <li><a class="text-decoration-none" href="{% url 'teacher_list' %}"><i class="fas fa-chalkboard-teacher"></i> Teachers List</a></li>
                                 <li><a class="text-decoration-none" href="{% url 'attendance' %}"><i class="fas fa-calendar-check"></i> Attendance</a></li>
-                                <li><a class="text-decoration-none" href="{% url 'subjects' %}"><i class="fas fa-book"></i> Subjects</a></li>
                                 <li><a class="text-decoration-none" href="{% url 'notices' %}"><i class="fas fa-bullhorn"></i> Notices</a></li>
                                 <li><a class="text-decoration-none" href="{% url 'tickets' %}"><i class="fas fa-ticket-alt"></i> Raise a Ticket</a></li>
                             {% elif user.profile.role == 'Teacher' %}

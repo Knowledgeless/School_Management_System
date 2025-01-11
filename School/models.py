@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+import datetime, traceback
+from django.utils.timezone import now
 
 # Class Model
 class Class(models.Model):
@@ -37,17 +39,22 @@ class Student(models.Model):
     section = models.CharField(max_length=2)
     roll_no = models.IntegerField()
     full_name = models.CharField(max_length=255, default="give_me_name")
-    year_of_admission = models.IntegerField(null=True, blank=True)  # Add this field
+    year_of_admission = models.DateField(null=True, blank=True, default=now)
     photo = models.ImageField(upload_to='student_photos/', null=True, blank=True)  # Add this field
 
     def __str__(self):
         return f"{self.profile.user.username} - {self.class_name} {self.section}"
 
     def save(self, *args, **kwargs):
-        # Automatically set the full name to user's full name if it's not set
-        if self.full_name == "give_me_name":
-            self.full_name = f"{self.profile.user.first_name} {self.profile.user.last_name}"
-        super().save(*args, **kwargs)
+        try:
+            # Automatically set the full name to user's full name if it's not set
+            if self.full_name == "give_me_name":
+                self.full_name = f"{self.profile.user.first_name} {self.profile.user.last_name}"
+            super().save(*args, **kwargs)
+        except Exception as e:
+            print(f"Error: {e}")
+            print(traceback.format_exc())  # Print the full traceback for debugging
+            raise
 
 # Attendance Model
 class Attendance(models.Model):
@@ -110,9 +117,12 @@ class TotalGrade(models.Model):
     def calculate_total_grade(self):
         results = Result.objects.filter(student=self.student)
         grades = [result.grade for result in results]
+        if results:
+            average_mark = sum(result.marks for result in results) / len(results)
+        else:
+            average_mark = 0
         if 'F' in grades:
             return 'F'
-        average_mark = sum(result.marks for result in results) / len(results)
         if average_mark >= 80:
             return 'A+'
         elif 70 <= average_mark < 80:
@@ -147,8 +157,11 @@ class Ticket(models.Model):
 class Teacher(models.Model):
     profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
     subject = models.CharField(max_length=100)  # e.g., "Math", "Science"
-    year_of_joining = models.IntegerField(null=True, blank=True)
+    year_of_joining = models.DateField(null=True, blank=True, default=now)
     department = models.CharField(max_length=100, blank=True, null=True)  # New department field
+    phone_number = models.CharField(max_length=15, null=True, blank=True, default=None)  # Phone number
+    email = models.EmailField(null=True, blank=True, default=None)  # Email address
+
     
     def __str__(self):
         return f"{self.profile.user.username} - {self.subject}"
