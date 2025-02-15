@@ -1,0 +1,146 @@
+
+
+/* Global Styles*/
+.body {
+    color: #1e1e1e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    margin: 0 auto;
+    width: 30%;
+}
+
+/* Form Container */
+.container {
+    background-color: whitesmoke;
+    padding: 30px;
+    border-radius: 10px;
+    width: 100%;
+}
+
+/* Form Title */
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Form Groups */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+/* Labels */
+.form-group label {
+    font-size: 14px;
+    margin: 0 5px;
+}
+
+/* Inputs */
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none !important;
+    border-radius: 0 !important;
+    border-bottom: 1px solid #1e1e1e !important;
+    background-color: transparent !important;
+    color: #1e1e1e;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.form-group input:focus, .form-group input:active, .form-group select:focus, .form-group select:active, .form-group textarea:focus, .form-group textarea:active{
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+
+/* Autofill Fix */
+input:-webkit-autofill {
+    background-color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* Hidden Class */
+.hidden {
+    display: none;
+}
+
+/* Button */
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: rgb(5, 28, 45);
+    color: whitesmoke;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: rgb(5, 28, 45);
+}
+
+/* Date Picker */
+/* input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0);
+    cursor: pointer;
+} */
+
+/* Autofill Fix */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    background-color: transparent !important;
+    -webkit-box-shadow: 0 0 0px 1000px #1e1e1e inset !important;
+    -webkit-text-fill-color: #1e1e1e !important;
+    color: #1e1e1e !important;
+}
+
+/* Dropdown Fix */
+select {
+    background-color: transparent !important;
+    color: #1e1e1e !important;
+}
+
+/* Dropdown Options */
+select option {
+    background-color: #1e1e1e !important;
+    color: whitesmoke !important;
+} 
+
+/*
+=====================
+*/
+
+/* Smaller Form Container */
+.container {
+    background-color: whitesmoke;
+    padding: 20px;
+    border-radius: 10px;
+    width: 30%; /* Reduced width */
+    min-width: 320px;
+}
+
+/* Form Groups - Adjusting Padding */
+.form-group {
+    margin-bottom: 10px;
+}
+
+/* Buttons Side-by-Side */
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+button {
+    flex: 1;
+}

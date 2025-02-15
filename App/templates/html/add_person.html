@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add Person{% endblock title %}
+{% block links %}
+    <link rel="stylesheet" href=" {% static 'css/add_person.css' %} ">
+{% endblock links %}
+
+{% block content %}
+
+    {% comment %} <div class="body">
+        <div class="container">
+            <h2>User Registration</h2>
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Full Name:</label> {{ form.full_name }}
+                </div>
+                <div class="form-group">
+                    <label>Email:</label> {{ form.email }}
+                </div>
+                <div class="form-group">
+                    <label>Password:</label> {{ form.password1 }}
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password:</label> {{ form.password2 }}
+                </div>
+                <div class="form-group">
+                    <label>Role:</label> 
+                    {{ form.role }}
+                </div>
+
+                <!-- Student Fields -->
+                <div id="student-fields" class="hidden">
+                    <h3>Student Information</h3>
+                    <div class="form-group">
+                        <label>Class:</label> {{ form.student_class }}
+                    </div>
+                    <div class="form-group">
+                        <label>Section:</label> {{ form.section }}
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Group:</label> {{ form.blood_group }}
+                    </div>
+                    <div class="form-group">
+                        <label>Father's Name:</label> {{ form.father_name }}
+                    </div>
+                    <div class="form-group">
+                        <label>Mother's Name:</label> {{ form.mother_name }}
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number:</label> {{ form.mobile_number }}
+                    </div>
+                    <div class="form-group">
+                        <label>Admission Date:</label> {{ form.admission_date }}
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth:</label> {{ form.date_of_birth }}
+                    </div>
+                    <div class="form-group">
+                        <label>Permanent Address:</label> {{ form.permanent_address }}
+                    </div>
+                </div>
+
+                <!-- Teacher Fields -->
+                <div id="teacher-fields" class="hidden">
+                    <h3>Teacher Information</h3>
+                    <div class="form-group">
+                        <label>Subject:</label> {{ form.subject }}
+                    </div>
+                    <div class="form-group">
+                        <label>Joining Date:</label> {{ form.joining_date }}
+                    </div>
+                    <div class="form-group">
+                        <label>Address:</label> {{ form.teacher_address }}
+                    </div>
+                </div>
+
+                <!-- Staff Fields -->
+                <div id="staff-fields" class="hidden">
+                    <h3>Staff Information</h3>
+                    <div class="form-group">
+                        <label>Department:</label> {{ form.department }}
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number:</label> {{ form.staff_mobile }}
+                    </div>
+                </div>
+
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    </div> {% endcomment %}
+
+    <div class="body">
+        <div class="container">
+            <h2>User Registration</h2>
+
+            <form id="registration-form" method="post">
+                {% csrf_token %}
+            
+                <!-- Step 1: Basic Info -->
+                <div class="step" id="step-1">
+                    <div class="form-group">
+                        {{ form.full_name }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.email }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.password1 }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.password2 }}
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Group:</label> {{ form.blood_group }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.mobile_number }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.permanent_address }}
+                    </div>
+                    <div class="form-group">
+                        <label>Role:</label> {{ form.role }}
+                    </div>
+            
+                    <div class="button-container">
+                        <button type="button" id="next-btn">Next</button>
+                    </div>
+                </div>
+            
+                <!-- Step 2: Role-Based Info -->
+                <div class="step hidden" id="step-2">
+                    <div id="role-fields">
+                        <!-- Student Fields -->
+                        <div id="student-fields" class="role-section hidden">
+                            <h3>Student Information</h3>
+                            <div class="form-group">
+                                <label>Class:</label> {{ form.student_class }}
+                            </div>
+                            <div class="form-group">
+                                <label>Section:</label> {{ form.section }}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.father_name }}
+                            </div>
+                            <div class="form-group">
+                                {{ form.mother_name }}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Admission Date:</label> {{ form.admission_date }}
+                            </div>
+                            <div class="form-group">
+                                <label>Date of Birth:</label> {{ form.date_of_birth }}
+                            </div>
+                            
+                        </div>
+            
+                        <!-- Teacher Fields -->
+                        <div id="teacher-fields" class="role-section hidden">
+                            <h3>Teacher Information</h3>
+                            <div class="form-group">
+                                <label>Date of Birth:</label> {{ form.date_of_birth }}
+                            </div>
+                            <div class="form-group">
+                                {{ form.subject }}
+                            </div>
+                            <div class="form-group">
+                                <label>Joining Date:</label> {{ form.joining_date }}
+                            </div>
+                        </div>
+            
+                        <!-- Staff Fields -->
+                        <div id="staff-fields" class="role-section hidden">
+                            <h3>Staff Information</h3>
+                            <div class="form-group">
+                                {{ form.department }}
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="button-container">
+                        <button type="button" id="prev-btn">Previous</button>
+                        <button type="submit">Register</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+
+{% endblock content %}
+
+
+
+
+{% block js %}
+    <script src=" {% static "js/add_person.js" %} "></script>
+{% endblock js %}
